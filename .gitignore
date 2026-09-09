@@ -1,0 +1,12 @@
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+credentials.json
+token.json
+veya_data/*.db
+scratch/
+.DS_Store

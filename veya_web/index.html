@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VeyaCI — Personal Life Intelligence</title>
+  <link rel="stylesheet" href="styles.css">
+
+    <style>
+      .form-row .fval:disabled, .form-row input:disabled, .orbit-row .o-fval:disabled {
+        color: #aaa !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        appearance: none;
+        -webkit-appearance: none;
+        opacity: 1; /* For iOS */
+      }
+      .form-row .fval:not(:disabled), .form-row input:not(:disabled), .orbit-row .o-fval:not(:disabled) {
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        padding: 4px 8px !important;
+        color: #000 !important;
+      }
+      .orbit-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+      }
+      .orbit-row input {
+        flex: 1;
+      }
+    </style>
+    </head>
+<body>
+  <div class="app-container">
+    <!-- Status Bar (Mock) -->
+    <div class="statusbar"><span>9:41</span><div class="dynamic-island"></div><span>●●●●</span></div>
+    
+    <!-- Top Nav -->
+    <div class="ig-nav">
+      <div class="ig-logo">veya</div>
+      <div class="ig-nav-icons">
+        <div class="ic" onclick="toggleNotifPopup()">♡<span class="dot" id="notifBadge" style="display:none"></span></div>
+        <div class="avatar-mini" id="topAvatarBtn" onclick="toggleProfileModal()">M</div>
+      </div>
+    </div>
+
+    <!-- TAB 1: HOME CHAT -->
+    <div id="tab-home" class="screen tab-pane active">
+      <div class="chat-header" style="position: relative;">
+        Veya
+        <div style="position: absolute; right: 14px; font-size: 20px; cursor: pointer;" onclick="executeAction('opt_voice_call', 'Voice Call')">📞</div>
+      </div>
+      <div id="homeChatThread" class="chat-body">
+        <!-- Messages loaded here -->
+      </div>
+      <div id="homeChatTyping" class="typing-indicator hidden" style="margin: 0 14px 14px 14px;">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="chat-input-row">
+        <input type="file" id="chatFileInput" class="hidden" onchange="handleFileSelect(event)">
+        <button class="chat-icon-btn plus" title="Attach file" style="border:none;background:none;font-size:24px;color:#8E8E8E;cursor:pointer;padding:0 4px;font-weight:300;" onclick="triggerFileUpload()">+</button>
+        <input type="text" id="homeChatInput" class="chat-input" placeholder="Message Veya..." onkeypress="handleHomeChatKeyPress(event)">
+        <button class="chat-icon-btn mic" title="Voice input" style="border:none;background:none;font-size:18px;color:#8E8E8E;cursor:pointer;padding:0 4px;" onclick="toggleVoiceRecord()">🎙️</button>
+        <button class="chat-send" onclick="sendHomeChatMessage()">↑</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: INSIGHTS -->
+    <div id="tab-insights" class="screen tab-pane">
+      <div class="post" id="insightActionableBlock" style="display:none;">
+        <div class="post-head">
+          <div class="avatar-ring"><div class="inner">V</div></div>
+          <div class="who">
+            <div class="name">Your twin · today</div>
+            <div id="twinMaturityLabel" class="time">Learning</div>
+          </div>
+        </div>
+        <p class="body" id="insightActionableText"></p>
+        <div class="action-row">
+          <div class="a" id="insightNudgeBtn" onclick="triggerInsightNudge()"><span class="ic">✅</span>Remind me</div>
+        </div>
+      </div>
+
+      <div class="stat-header">This week</div>
+      <div class="stat-sub">Tap any stat for the full breakdown</div>
+      <div class="stat-grid" id="insightsGrid">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 3: PLANNING -->
+    <div id="tab-planning" class="screen tab-pane">
+      <div class="section-cap" id="planDatePill">Already on calendar</div>
+      <div id="planningExistingList"></div>
+
+      <div class="section-cap">Veya suggests</div>
+      <div id="planningSuggestedList"></div>
+    </div>
+
+    <div id="fabFinalList" class="hidden" style="position:absolute; bottom:80px; right:20px; background:var(--link); color:white; border-radius:50%; width:50px; height:50px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.2); z-index:50;" onclick="openFinalSchedule()">📅</div>
+    <!-- Bottom Tab Bar -->
+    <div class="tabbar">
+      <div class="tab inactive"|nav-item" id="nav-insights" onclick="switchTab('insights')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+      </div>
+      <div class="tab active|nav-item" id="nav-home" onclick="switchTab('home')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/></svg>
+      </div>
+      <div class="tab inactive|nav-item" id="nav-planning" onclick="switchTab('planning')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <!-- OVERLAYS: ASK TO SIGN IN -->
+    <div id="authModal" class="overlay-screen hidden">
+      <div class="statusbar"><span>9:41</span><div class="dynamic-island"></div><span>●●●●</span></div>
+      <div class="ig-nav">
+        <div class="ig-logo">veya</div>
+      </div>
+      <div class="screen active" style="overflow-y:auto; padding-bottom:50px;">
+        <h2 style="text-align:center; margin-top:20px;">Welcome</h2>
+        <p id="authSubTitle" style="text-align:center; color:var(--text-2); margin-bottom:20px;">Sign in to your life companion</p>
+        <div class="auth-tabs">
+          <button id="tabSignInBtn" class="auth-tab-btn active" onclick="setAuthMode('signin')">Sign In</button>
+          <button id="tabSignUpBtn" class="auth-tab-btn" onclick="setAuthMode('signup')">Create New</button>
+        </div>
+        <form id="authForm" onsubmit="handleAuthSubmit(event)" class="auth-form">
+          <div>
+            <label><b>Username</b></label><br>
+            <input type="text" id="authUsername" class="auth-input" placeholder="e.g. test@veya.ai" value="test@veya.ai" required>
+          </div>
+          <div id="emailFieldDiv" style="display: none;">
+            <label><b>Email (Optional - for Calendar Sync)</b></label><br>
+            <input type="email" id="authEmail" class="auth-input" placeholder="e.g. your@gmail.com" value="">
+          </div>
+          <div>
+            <label><b>Password</b></label><br>
+            <input type="password" id="authPassword" class="auth-input" value="password123" required>
+          </div>
+          <button type="submit" id="authSubmitBtn" class="auth-submit-btn">Sign In</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- OVERLAYS: PROFILE -->
+    <div id="profileModal" class="overlay-screen hidden">
+      <div class="statusbar"><span>9:41</span><div class="dynamic-island"></div><span>●●●●</span></div>
+      <div class="ig-nav">
+        <div class="ig-nav-cancel" onclick="toggleProfileModal()">Cancel</div>
+        <div class="ig-nav-back" style="font-weight:600;">Edit profile</div>
+        <div class="ig-nav-done" id="profileDoneBtn" onclick="savePreferences()" style="display:none;">Done</div>
+      </div>
+      <div class="screen active" style="overflow-y:auto; padding-bottom:50px;">
+        <div class="profile-avatar-block">
+          <div class="profile-avatar"><div class="inner">U</div></div>
+          <div class="edit-pic-link" onclick="toggleEditMode()" id="editPersonaBtn">Edit persona</div>
+        </div>
+        <div class="form-row">
+          <div class="flabel">Name</div>
+          <input id="prefName" class="fval" disabled value="">
+        </div>
+        <div class="form-row">
+          <div class="flabel">Stress</div>
+          <select id="prefStress" class="fval" disabled>
+            <option value="Low">Low</option>
+            <option value="Moderate">Moderate</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+                  <div class="form-row">
+            <div class="flabel">Anchor</div>
+            <input id="prefAnchor" class="fval" disabled value="">
+          </div>
+          <div class="form-row">
+            <div class="flabel">Gender</div>
+            <input id="prefGender" class="fval" disabled value="">
+          </div>
+          <div class="form-row">
+            <div class="flabel">Household</div>
+            <input type="number" id="prefHousehold" class="fval" disabled value="0" style="width:100%; border:none; text-align:right; outline:none; background:transparent; font-size:16px;">
+          </div>
+          <div class="form-row">
+            <div class="flabel">Rel. Health</div>
+            <select id="prefRelHealth" class="fval" disabled>
+              <option value="Strong">Strong</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Strained">Strained</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="flabel">Bio Phase</div>
+            <select id="prefBioPhase" class="fval" disabled>
+              <option value="Normal">Normal</option>
+              <option value="Follicular">Follicular</option>
+              <option value="Luteal">Luteal</option>
+              <option value="Menstrual">Menstrual</option>
+              <option value="Ovulatory">Ovulatory</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="flabel">Maturity (wks)</div>
+            <input type="number" id="prefMaturity" class="fval" disabled value="0" style="width:100%; border:none; text-align:right; outline:none; background:transparent; font-size:16px;">
+          </div>
+          <div class="form-row">
+            <div class="flabel">Calendars</div>
+            <select id="prefCalendars" class="fval" disabled>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="flabel">Wearable</div>
+            <select id="prefWearable" class="fval" disabled>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+        <div class="section-cap">Household Orbit</div>
+        
+          <div id="orbitListContainer" style="padding:0 14px;"></div>
+          <button id="addOrbitBtn" onclick="addOrbitRow()" style="display:none; margin: 8px 14px; background:none; border:1px solid #ccc; border-radius:4px; padding:4px 8px; cursor:pointer;">+ Add Person</button>
+    
+        <div class="section-cap">Active Reminders</div>
+        <ul id="remindersList" style="list-style:none; padding:0 14px; font-size:14px;"></ul>
+        <div class="empty-plain">
+          <div class="link-btn" style="color:var(--danger);" onclick="logoutUser()">Sign Out</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERLAYS: NOTIFICATIONS -->
+    <div id="notifPopup" class="overlay-screen hidden">
+      <div class="statusbar"><span>9:41</span><div class="dynamic-island"></div><span>●●●●</span></div>
+      <div class="ig-nav">
+        <div class="ig-nav-back" style="font-weight:700; font-size:17px;">Activity</div>
+        <div class="ig-nav-done" onclick="toggleNotifPopup()">Close</div>
+      </div>
+      <div class="screen active" style="overflow-y:auto; padding-bottom:50px;">
+        <div id="notifList">
+          <div class="empty-plain">No new activity.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DERIVATION SHEET -->
+    <div id="derivationDrawer" class="overlay-screen hidden" style="background:rgba(0,0,0,0.5); justify-content:flex-end;">
+      <div style="background:#fff; border-top-left-radius:16px; border-top-right-radius:16px; position:relative;">
+        <div class="sheet-close" onclick="closeDerivationDrawer()" style="padding: 15px; z-index: 100; cursor: pointer;">✕</div>
+        <div class="sheet-handle"></div>
+        <div class="sheet-top">
+          <div class="sheet-num" id="drawerScoreBadge">0</div>
+          <div class="sheet-of">out of 100</div>
+          <div class="sheet-title" id="drawerMetricTitle">Metric</div>
+        </div>
+        <div id="drawerTypingIndicator" class="typing-indicator hidden" style="margin: 0 0 14px 14px;">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="derive-list" id="derivationList"></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+        <div id="feasibilityDrawer" class="overlay-screen hidden" style="background:rgba(0,0,0,0.5); justify-content:flex-end;">
+      <div style="background:#fff; border-top-left-radius:16px; border-top-right-radius:16px; position:relative; padding-bottom:20px;">
+        <div class="sheet-close" onclick="closeFeasibilityDrawer()" style="padding: 15px; z-index: 100; cursor: pointer;">✕</div>
+        <div class="sheet-handle"></div>
+        <div class="sheet-top">
+          <div class="sheet-title" id="feasibilityItemName">"Deep Product Synthesis"</div>
+          <div style="font-size:13px; color:#666; margin-top:4px;">How would you like to adjust this?</div>
+        </div>
+        <div style="padding:0 20px; display:flex; flex-direction:column; gap:10px;">
+          <div class="pill outline" style="text-align:center;" onclick="applyFeasibilityAdjustment('Reschedule')">Reschedule Time</div>
+          <div class="pill outline" style="text-align:center;" onclick="applyFeasibilityAdjustment('Delegate')">Delegate Task</div>
+          <div class="pill danger" style="text-align:center;" onclick="applyFeasibilityAdjustment('Cancel')">Cancel Task</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div id="finalScheduleModal" class="overlay-screen hidden" style="background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+      <div style="background:#fff; border-radius:16px; width:90%; max-height:80%; overflow-y:auto; position:relative; padding:20px;">
+        <div class="sheet-close" onclick="closeFinalSchedule()" style="position:absolute; top:10px; right:15px; font-size:20px; cursor:pointer;">✕</div>
+        <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Final Daily Flow</h3>
+        <div id="finalScheduleList" style="margin-top:15px; display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </div>
+    
+    <!-- Dummy Calendar Redirect Modal -->
+    <div id="dummyCalendarModal" class="overlay-screen hidden" style="background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+      <div style="background:#fff; border-radius:16px; width:80%; text-align:center; padding:30px 20px;">
+        <div style="font-size:40px; margin-bottom:10px;">🗓️</div>
+        <h3 style="margin-top:0; color:#333;">Redirecting to Google Calendar...</h3>
+        <p style="color:#666; font-size:14px;">(This is a dummy UX to showcase the flow)</p>
+        <div class="pill fill" style="display:inline-block; margin-top:15px;" onclick="closeDummyCalendar()">Got it</div>
+      </div>
+    </div>
+
+    <!-- VOICE CALL OVERLAY -->
+    <div id="voiceCallModal" class="voice-overlay hidden">
+      <div style="font-size:3rem; margin-bottom:1rem;">💌</div>
+      <h2>Talking with Veya...</h2>
+      <p style="color:#94a3b8; font-size:0.9rem;">Veya is listening...</p>
+      <button class="voice-end-btn" onclick="endVoiceCall()">END</button>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
