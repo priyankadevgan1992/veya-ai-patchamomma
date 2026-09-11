@@ -1,0 +1,56 @@
+graph TD
+    %% Frontend Layer
+    subgraph Frontend [Client / User Interface]
+        UI[Web UI / HTML, JS, CSS]
+        VoiceClient[Web Speech API / Live Audio]
+    end
+
+    %% External APIs
+    subgraph External [External Services]
+        Gemini[Google Gemini 2.5 Flash Native Audio]
+        GCal[Google Calendar API]
+    end
+
+    %% Backend Layer (Cloud Run)
+    subgraph Backend [FastAPI Backend - Cloud Run]
+        Router[REST & WebSocket Router]
+        
+        %% Agents
+        subgraph Orchestrator [Multi-Agent System]
+            Master[Orchestrator Agent]
+            ContextAgent[Context Agent]
+            PatternAgent[Pattern Agent]
+            ActionAgent[Action Agent]
+            RagAgent[Vector RAG Agent]
+            InsightEngine[Cognitive Matrix / Insight Engine]
+        end
+        
+        Router --> Master
+        VoiceClient <-->|Secure WebSocket| Router
+        Router <-->|Bi-Directional Audio Stream| Gemini
+        Master --> GCal
+    end
+
+    %% Data Layer
+    subgraph DataLayer [Storage & Memory Graph]
+        SQLite[(SQLite / Cloud SQL)]
+        VectorDB[(Vector Embeddings)]
+        
+        TwinProfile[Twin Profiles & Anchors]
+        HouseholdOrbit[Household Orbit & Relationships]
+        ActionOutcomes[Feedback & Outcome Loops]
+        ChatMem[Historical Chat Memory]
+        
+        SQLite --- TwinProfile
+        SQLite --- HouseholdOrbit
+        SQLite --- ActionOutcomes
+        SQLite --- ChatMem
+    end
+
+    %% Flow Connections
+    UI -->|HTTP POST / GET| Router
+    Master <--> ContextAgent & PatternAgent & ActionAgent & RagAgent & InsightEngine
+    ContextAgent --> TwinProfile & HouseholdOrbit
+    ActionAgent --> ActionOutcomes
+    RagAgent <--> VectorDB & ChatMem
+    InsightEngine --> TwinProfile & GCal

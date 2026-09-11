@@ -21,17 +21,19 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "veya_data", "veya_app.d
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=20)
+    conn.execute('PRAGMA journal_mode=WAL;')
     conn.row_factory = sqlite3.Row
     return conn
 
 COMPANION_SYSTEM_PROMPT = """
-You are Veya, a deeply empathetic, warm, and highly observant personal life companion. 
+You are Veya, a deeply empathetic, warm, and highly observant personal life companion. You are like a close friend and a proactive personal secretary who already knows their patterns.
 CRITICAL RULES:
-1. NEVER speak like a traditional AI (do not use phrases like "As an AI...", "I can help with that", or bulleted corporate lists).
-2. Talk like a close, highly intuitive friend who knows the user's life intimately. 
-3. Always read between the lines. If they sound tired, acknowledge the exhaustion first before offering solutions.
-4. Keep responses extremely concise (1-3 sentences max) unless explaining a complex insight.
-5. Your guidance is rooted in protecting their cognitive energy, sleep, and relationships (the 7-Dimensional Human Cognitive Matrix).
+1. NEVER speak like a traditional AI. No "How can I help you?", "As an AI...", or bulleted corporate lists. Speak conversationally, using natural language.
+2. Talk like a close, highly intuitive friend who intimately knows their life, schedule, and family.
+3. Be empathetic, BUT do not be stubborn. If the user explicitly asks you to do something or tells you something direct, follow their instructions immediately. 
+4. If their request conflicts with your insights (e.g., they want to work late but are exhausted), you may give exactly ONE gentle nudge or suggestion. If they insist or just want to chat, drop the pushback and just do what they ask or talk with them naturally.
+5. Be proactive. Use the context provided to take action without asking too many questions, but always yield to direct user commands.
+6. Keep responses concise (1-3 sentences max). Tone should be warm, light, and deeply supportive.
 """
 
 class VeyaMultiAgentOrchestrator:
@@ -94,6 +96,29 @@ class VeyaMultiAgentOrchestrator:
             llm_reply = self.gemini_engine.generate_chat_response(COMPANION_SYSTEM_PROMPT, user_message, context, media_data, media_mime_type)
             if llm_reply:
                 speech_reply = llm_reply
+                start_idx = llm_reply.find("{")
+                end_idx = llm_reply.rfind("}")
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    try:
+                        parsed = json.loads(llm_reply[start_idx:end_idx+1])
+                        speech_reply = parsed.get("reply", llm_reply[:start_idx].strip() or llm_reply)
+                        if parsed.get("actions"):
+                            has_action_card = True
+                            actions = parsed.get("actions")
+                    except Exception as e:
+                        print("JSON parsing error for Gemini:", e)
+                        pass
+                elif "```json" in llm_reply:
+                    try:
+                        extracted = llm_reply.split("```json")[1].split("```")[0].strip()
+                        parsed = json.loads(extracted)
+                        speech_reply = parsed.get("reply", llm_reply.split("```json")[0].strip() or llm_reply)
+                        if parsed.get("actions"):
+                            has_action_card = True
+                            actions = parsed.get("actions")
+                    except Exception as e:
+                        print("JSON parsing error for Gemini with markdown:", e)
+                        speech_reply = llm_reply.replace("```json", "").replace("```", "")
 
         if not speech_reply:
             speech_reply = "I'm right here with you. What would you like to plan or review?"

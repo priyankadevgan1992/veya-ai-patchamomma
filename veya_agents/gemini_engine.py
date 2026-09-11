@@ -34,11 +34,30 @@ class GeminiLLMEngine:
 System Instruction:
 {system_instruction}
 
-IMPORTANT: Do NOT hallucinate taking actions (like setting reminders, sending emails, or booking calendar events). You are a conversational agent. Action cards are handled separately.
+IMPORTANT: You are a conversational agent but you can ALSO propose interactive action cards if the user explicitly asks for options, asks to schedule something, or asks you to free up their schedule.
 
-Conversational Onboarding Logic:
-- If 'onboarding_completed' is False, your primary goal is to gently ask ONE question at a time to get to know them (e.g. name, role, life anchor). Wrap the question in warm, empathetic banter. DO NOT interrogate them. Keep it conversational. Max 2-3 sentences.
-- If 'onboarding_completed' is True, act as a light, happy, and supportive life companion. Do NOT assume they are busy or stressed unless they explicitly say so. Keep the tone friendly, energetic, and casual, like a normal friend.
+CRITICAL INSTRUCTION: Whenever the user types ANY message containing the word "options" (e.g. "options?", "give me options", "show me options", "what are my options"), you MUST STOP being conversational and instead return a RAW JSON OBJECT. Do NOT include any text before or after the JSON block. Do NOT use markdown. Just output raw JSON in this EXACT format:
+{{
+  "reply": "Your warm conversational response goes here.",
+  "actions": [
+    {{
+      "id": "dyn_action_1",
+      "title": "Short actionable title (e.g. Schedule 10 AM slot)",
+      "description": "Short description",
+      "type": "CALENDAR_UPDATE",
+      "badge": "Dynamic Option"
+    }}
+  ]
+}}
+
+If the user does NOT ask for options, just reply normally with plain text (no JSON).
+
+Conversational Tone, Proactivity & Yielding:
+- Act as a light, happy, deeply empathetic life companion. Talk like a best friend who is also an incredible, proactive assistant.
+- Anticipate their needs based on their calendar. Don't constantly ask "What would you like me to do?".
+- IMPORTANT YIELD RULE: If the user explicitly asks you to do something or talk about a specific topic, DO IT immediately. If their request contradicts your wellness insights, you may offer exactly ONE gentle nudge (e.g. "Are you sure? You've had a long day."). But if they just want to chat or do it anyway, follow their lead immediately without further pushback.
+- If they are stressed, validate it, but don't force them to stop working if they don't want to. Keep the tone casual and warm.
+
 
 User Profile & Context:
 - Onboarding Completed: {context.get('onboarding_completed', False)}
@@ -51,7 +70,7 @@ User Profile & Context:
 
 User says: "{user_message}"
 
-Reply warmly and conversationally as Veya (keep it natural, like a close friend, max 2-3 sentences):
+Reply warmly and conversationally (max 2-3 sentences), UNLESS the user asks for options/scheduling/choices, in which case you MUST reply ONLY with the raw JSON format specified above.
 """
             # Try multiple models based on availability
             for m in ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"]:
@@ -95,9 +114,9 @@ Reply warmly and conversationally as Veya (keep it natural, like a close friend,
         if any(w in msg_lower for w in ["eat", "hungry", "food", "lunch", "dinner", "breakfast", "snack", "starving"]):
             if events_count > 0:
                 next_event = events[0].get("title", "your next meeting")
-                return f"I see you have '{next_event}' coming up soon. We should definitely get you fed before that so your glucose levels don't crash. Shall I find a quick 20-min window to block for a meal?"
+                return f"You definitely need fuel before '{next_event}'. I've noticed you skip meals when stressed. I'm proactively blocking a 20-min window right now so you can eat without interruptions."
             else:
-                return "You definitely need fuel! Since your schedule is clear, take a proper break. Maybe step away from the desk to eat so you get a real mental reset."
+                return "You definitely need fuel! Step away from the desk and get something to eat. I'll hold off on any notifications for the next 30 minutes so you can actually enjoy it."
 
         # Intent: Frustration / Bug Reports
         if any(w in msg_lower for w in ["broken", "bad", "stupid", "annoying", "hate", "one sided", "one-sided", "wrong"]):
@@ -114,10 +133,10 @@ Reply warmly and conversationally as Veya (keep it natural, like a close friend,
                 return "It's rare to have quiet moments! You could read that book you've been putting off, or maybe organize your goals for tomorrow. What sounds good?"
 
         # Intent: User is tired / exhausted
-        if any(w in msg_lower for w in ["tired", "exhausted", "sleepy", "drained"]):
+        if any(w in msg_lower for w in ["tired", "exhausted", "sleepy", "drained", "burnt out"]):
             if events_count >= 3:
-                return f"I see you have {events_count} meetings ahead. Your energy is low—do you want me to try and reschedule some of the non-essential ones?"
-            return "Your biological battery seems depleted. Please make sure to protect your evening window tonight for some solid recovery."
+                return f"I hear you, you've been pushing really hard lately. With {events_count} meetings ahead, your energy is understandably low. I'll automatically block out a 30-minute recovery buffer for you this afternoon so you can just breathe."
+            return "You sound completely drained. I'm noting this down. I'll make sure to block off your evening early tonight so you can actually disconnect and recover."
 
         # Intent: Greeting
         if any(w in msg_lower for w in ["hi ", "hi", "hello", "hey", "morning", "evening"]):

@@ -34,6 +34,7 @@ def init_db():
         calendars_connected INTEGER,
         wearable_connected INTEGER,
         twin_maturity_weeks INTEGER,
+        onboarding_completed INTEGER DEFAULT 1,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(internal_uuid) REFERENCES auth_vault(internal_uuid)
     );
@@ -85,6 +86,7 @@ def init_db():
         person_name TEXT,
         relationship_type TEXT,
         key_context TEXT,
+        importance_percent INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(internal_uuid) REFERENCES auth_vault(internal_uuid)
     );

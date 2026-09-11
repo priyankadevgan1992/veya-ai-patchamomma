@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Veya AI Technical Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        code { background-color: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
+        pre { background-color: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<h1>Veya AI: Technical Documentation</h1>
+<h2>1. Project Description</h2>
+<p>Veya AI is a deeply personalized "Living Twin" designed to act as an ultimate constant companion and proactive personal secretary. In today's hyper-connected world, calendar management apps only manage time, but they fail to manage <em>energy</em> and <em>relationships</em>. Our ultimate goal is to make the user's life "easy as hell" by seamlessly managing these unseen dimensions.</p>
+<p>Veya achieves this through <strong>"slow nudges."</strong> Rather than bombarding the user with notifications, Veya operates quietly in the background, analyzing schedule data, behavioral patterns, and the user's semantic vector graph (their "Household Orbit" and "Life Anchors"). Veya knows the user's patterns. If a user is facing a grueling day of meetings, Veya doesn't wait to be asked; it proactively suggests a 30-minute recovery block, or intelligently proposes rescheduling a late-evening sync to protect family time. It yields to the user's direct commands but provides exactly the right gentle pushback when they are trending toward burnout.</p>
+<h2>2. Project Use Case</h2>
+<p><strong>Target Audience:</strong> Mid-Senior Level Executives, Product Managers, and busy professionals struggling with work-life balance.</p>
+<p><strong>The Scenario:</strong> Vaibhav is a senior executive who prioritizes "Work &gt; Learning &gt; Kid &gt; Wife &gt; Health." However, his calendar is frequently overloaded. 
+* <strong>Without Veya:</strong> Vaibhav powers through the day, skips lunch, works late into the evening, misses dinner with his wife and 10-year-old son, and goes to bed completely burned out, accumulating a "Relational Deficit."
+* <strong>With Veya:</strong> Veya analyzes Vaibhav's calendar in the morning and detects a high-stress pattern. 
+  1. <strong>Insights:</strong> Veya proactively sends an insight: <em>"Your Energy Balance is low today. 5.5 hours of meetings are draining you."</em>
+  2. <strong>Voice Call Support:</strong> Feeling overwhelmed, Vaibhav hits the "Call Veya" button. Using real-time, bi-directional audio, Vaibhav vents about his stress. Veya acts as an empathetic sounding board, validating his exhaustion.
+  3. <strong>Actionable Rescheduling:</strong> During or after the chat, Veya offers interactive "Action Cards." Veya proposes: <em>Option A: Reschedule 6:00 PM Sync to Friday 10 AM</em> or <em>Option B: Compress to a 15-minute standup</em>. With a single click of "Approve &amp; Apply", Veya handles the calendar logistics, effectively protecting his evening recovery and time with his family.</p>
+<h2>3. Architecture Diagram</h2>
+<p><img src="file:///C:/patchamomma/prac1/architecture.png" style="width: 100%; max-width: 800px; display: block; margin: 20px auto; border: 1px solid #eaeaea; border-radius: 8px;"></p>
+<h2>4. Multi-Agent Design &amp; Future Pattern Planning</h2>
+<p>Veya's intelligence is not a single prompt, but a symphony of specialized agents working together:</p>
+<ol>
+<li><strong>Context Agent:</strong> Retrieves the user's "Living Twin" profile, pulling in their life anchors, relationship health, and active household orbit members.</li>
+<li><strong>Pattern Agent:</strong> Analyzes historical data and upcoming Google Calendar events to detect multi-dimensional cognitive patterns (e.g., detecting if a high-stakes pitch is coming up or if the user is in a relational deficit with a spouse).</li>
+<li><strong>Insight Engine (Cognitive Matrix):</strong> A deterministic scoring engine that calculates "Energy Capacity," "Focus Depth," and "Relational Deficit" based on the user's workload, generating color-coded grid insights (Red/Orange/Green).</li>
+<li><strong>Action Agent (The Secretary):</strong> Evaluates trade-offs. If the Pattern Agent detects a schedule clash with a family boundary, the Action Agent generates 1-click "Action Cards" (e.g., "Reschedule," "Compress," "Lock Block").</li>
+<li><strong>RAG Agent &amp; Orchestrator:</strong> Synthesizes the final conversational response, ensuring Veya speaks like a warm, empathetic friend rather than a robotic AI.</li>
+</ol>
+<p><strong>Storage &amp; Future Pattern Planning:</strong>
+Data is stored securely using SQLite (designed for seamless migration to Cloud SQL). We maintain tables for <code>twin_profiles</code>, <code>household_profiles</code>, and <code>action_outcomes</code>. 
+* <strong>Future Planning (Feedback Loops):</strong> Every time Veya suggests an action (like a slow nudge to take a walk) and the user clicks "Approve &amp; Apply", the system logs an explicit positive score in the <code>action_outcomes</code> table. In the future, the Action Agent queries this history. If it learns that the user consistently prefers "Compressing" meetings over "Rescheduling" them, it automatically collapses future options to match this proven preference, truly learning the user's habits.</p>
+<h2>5. Core Features Deep Dive</h2>
+<ul>
+<li><strong>Bi-Directional Voice Calling:</strong> Integrated with Gemini 2.5 Flash Native Audio via WebSockets. Users can have fluid, real-time voice conversations with Veya. The system streams raw PCM audio back and forth, allowing Veya to detect vocal stress and respond with deep, human-like empathy.</li>
+<li><strong>Proactive Insights &amp; Slow Nudges:</strong> Veya calculates wellness scores in the background. Instead of demanding action, it offers slow nudges—like a small UI badge suggesting a 10-minute break—allowing the user to opt-in to wellness without feeling managed.</li>
+<li><strong>1-Click Rescheduling &amp; Planning:</strong> When a user is overwhelmed, conversational text isn't enough. Veya generates interactive "Action Cards" directly in the chat stream. A user can simply click "Approve &amp; Apply" to have Veya automatically execute Google Calendar mutations, reschedule conflicts, or block out focus time, acting as a true zero-friction secretary.</li>
+</ul>
+<h2>6. Competitive Differentiators (Why Veya Stands Out)</h2>
+<p>To stand out from traditional AI assistants and passive calendar tools, Veya is engineered with <strong>emotional intelligence</strong> and <strong>proactive agency</strong>.</p>
+<ol>
+<li><strong>The "Anti-Productivity" Angle:</strong> Every app on the market tries to make the user do <em>more</em> work. Veya is designed to protect the user from burnout. It acts as an "Energy &amp; Relationship Protector," whose primary KPI is preserving the user's well-being, not just their time.</li>
+<li><strong>The "Slow Nudge" Philosophy:</strong> Instead of blasting users with stressful push notifications or alarms, Veya uses ambient support. It places quiet, interactive action cards in the chat (e.g., "You look drained. I can push your 6 PM to tomorrow. Just click approve."). It feels like a luxury concierge, not a buzzing alarm clock.</li>
+<li><strong>The "No-Prompt" Experience:</strong> Users shouldn't have to be prompt engineers. Because of the Multi-Agent Orchestrator and Cognitive Matrix, Veya already knows the user's schedule, family dynamics, and stress levels <em>before</em> they open the app. The user can simply say "I'm tired," and Veya handles the complex logic of identifying the least-important meeting and offering a 1-click reschedule.</li>
+<li><strong>Real-Time Emotional Voice (The "Wow" Factor):</strong> The integration of Gemini 2.5 Flash Native Audio elevates Veya from a standard web app to a futuristic companion. The AI responds with a warm, empathetic voice that pauses, breathes, and adjusts its tone based on the user's stress levels, creating a deeply human connection.</li>
+<li><strong>The "Household Orbit" Concept:</strong> No other calendar app natively tracks a spouse, children, or family members as core data structures. By actively protecting time for "Aanya's homework" or "dinner with wife," Veya proves it understands the whole human being, not just the corporate employee.</li>
+</ol>
+</body>
+</html>

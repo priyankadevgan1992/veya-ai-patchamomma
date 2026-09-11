@@ -104,7 +104,7 @@ class ActionAgent:
 
         # Scenario A: Evening Household / Meeting Clash (Meera Style)
         elif ("husband" in mem_text or "daughter" in mem_text or cog_state["relational"]["spouse_away"]) and (
-            any(w in msg_lower for w in ["hectic", "stress", "meetings", "travel", "alone", "help", "yes", "what can i do"])
+            any(w in msg_lower for w in ["hectic", "stress", "meetings", "travel", "alone", "help", "what can i do"]) and not msg_lower.strip() == "yes"
         ):
             has_action_card = True
             actions = [
@@ -139,7 +139,7 @@ class ActionAgent:
                 actions[0]["badge"] = "Recommended based on your history"
 
         # Scenario B: Luteal Biological Recovery (Priya Style)
-        elif cog_state["biological"]["is_luteal"] and any(w in msg_lower for w in ["energy", "low", "tired", "cycle", "walk", "rest", "yes"]):
+        elif cog_state["biological"]["is_luteal"] and (any(w in msg_lower for w in ["energy", "low", "tired", "cycle", "walk", "rest"]) and not msg_lower.strip() == "yes"):
             has_action_card = True
             actions = [
                 {
@@ -164,7 +164,7 @@ class ActionAgent:
                 actions[0]["badge"] = "Recommended based on your history"
 
         # Scenario C: High-Stakes Prep Runway (Arjun Style)
-        elif cog_state["cognitive"]["high_stakes_event_present"] or any(w in msg_lower for w in ["pitch", "deck", "prep", "client", "presentation", "yes"]):
+        elif cog_state["cognitive"]["high_stakes_event_present"] or (any(w in msg_lower for w in ["pitch", "deck", "prep", "client", "presentation"]) and not msg_lower.strip() == "yes"):
             has_action_card = True
             actions = [
                 {

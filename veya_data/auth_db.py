@@ -10,6 +10,7 @@ def hash_password(password: str) -> str:
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=20)
+    conn.execute('PRAGMA journal_mode=WAL;')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -21,7 +22,8 @@ def init_auth_tables():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS user_accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
+            username TEXT UNIQUE,
+            email TEXT,
             password_hash TEXT NOT NULL,
             internal_uuid TEXT UNIQUE NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -64,9 +66,9 @@ def init_auth_tables():
         ))
 
         cursor.execute("""
-            INSERT INTO user_accounts (email, password_hash, internal_uuid)
-            VALUES (?, ?, ?)
-        """, (test_email, test_pass, test_uuid))
+            INSERT INTO user_accounts (username, email, password_hash, internal_uuid)
+            VALUES (?, ?, ?, ?)
+        """, ('meera', test_email, test_pass, test_uuid))
 
         print(f"Created enriched test account: {test_email}")
 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Veya AI Testing Instructions</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.7; padding: 40px; max-width: 900px; margin: 0 auto; }
+        h1, h2, h3 { color: #111827; }
+        p { margin-bottom: 15px; }
+        /* Explicitly force lists to block with margin to ensure new lines */
+        ul, ol { display: block; margin-top: 10px; margin-bottom: 20px; padding-left: 30px; }
+        li { display: list-item; margin-bottom: 10px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<h1>Deployed App Details: Steps to Access and Test</h1>
+<h3>1. Access the Live Application</h3>
+<ul>
+<li><strong>URL:</strong> <a href="https://veya-ai-986238160974.us-central1.run.app/app">https://veya-ai-986238160974.us-central1.run.app/app</a></li>
+<li><em>Note: The application is deployed via Google Cloud Run and is fully responsive (optimized for a mobile-viewport experience on desktop browsers).</em></li>
+</ul>
+<h3>2. Login Credentials</h3>
+<p>To demonstrate how Veya adapts to different cognitive loads, we have seeded two distinct testing personas. Please use either of the following credentials to log in:</p>
+<p><strong>Persona A (High-Stress Executive)</strong>
+* <strong>Username:</strong> <code>vaibhav</code>
+* <strong>Password:</strong> <code>password123</code>
+* <em>Context:</em> Vaibhav is an executive with 6 back-to-back meetings today. He is carrying a high "Energy Deficit" and risks missing dinner with his wife and son (Aanya).</p>
+<p><strong>Persona B (Balanced Product Manager)</strong>
+* <strong>Username:</strong> <code>test@veya.ai</code>
+* <strong>Password:</strong> <code>password123</code>
+* <em>Context:</em> Meera has a balanced schedule but occasionally needs help protecting her deep-focus work blocks.</p>
+<h3>3. Step-by-Step Testing Guide</h3>
+<p><strong>Step A: Explore the "Living Twin" &amp; Family Profile</strong>
+1. Once logged in, navigate to the <strong>Profile Tab</strong> on the bottom navigation bar (the user icon).
+2. Review the basic details, Life Anchors, and the <strong>Household Orbit</strong>. This proves that the AI is not just managing a calendar, but is actively aware of the user's family members (e.g., Vaibhav's wife and his child, Aanya).</p>
+<p><strong>Step B: Observe the Proactive Insights (The "Slow Nudge")</strong>
+1. Navigate to the <strong>Insights (Chart) Tab</strong> on the bottom navigation bar.
+2. Notice how Veya has <em>already</em> calculated the persona's "Energy Balance" and "Cognitive Load" based on their mock Google Calendar data, without requiring any prompts.</p>
+<p><strong>Step C: Trigger the Multi-Agent Orchestrator (Action Cards)</strong>
+1. Navigate back to the <strong>Chat (Home) Tab</strong>.
+2. To see the Action Agent dynamically clear your schedule, type the following command: <em>"Make my day free"</em>
+3. <strong>Observe:</strong> Veya will not just respond with text. The Action Agent will intercept the command, evaluate the calendar, and dynamically generate an <strong>Action Card</strong> in the chat UI offering to reschedule your meetings.
+4. Click <strong>"Approve &amp; Apply"</strong> on the action card. Notice how Veya handles the logistics in one click.</p>
+<p><strong>Step D: Test the Gemini Live Voice Integration (The "Wow" Factor)</strong>
+1. In the Chat Tab, click the <strong>Pink Phone Icon</strong> in the top right corner.
+2. Allow microphone permissions when prompted by your browser.
+3. Speak naturally into your microphone (e.g., <em>"Hey Veya, I'm feeling really burnt out today."</em>).
+4. <strong>Observe:</strong> Veya will respond in real-time using Google Gemini 2.5 Flash Native Audio. Notice how the AI adopts an empathetic, supportive, and human-like tone, validating your stress before offering solutions.
+5. Click the red "Hang Up" button to end the call and return to the text interface.</p>
+<h3>4. Technical Note for Judges</h3>
+<ul>
+<li><strong>Data Persistence:</strong> Because this is a shared live demo environment, the backend SQLite database is refreshed upon server spin-up. If you experience any odd state behavior, simply refresh the web page to re-initialize the pristine test data for Vaibhav and Meera.</li>
+</ul>
+</body>
+</html>

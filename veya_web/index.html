@@ -58,6 +58,13 @@
       <div id="homeChatTyping" class="typing-indicator hidden" style="margin: 0 14px 14px 14px;">
         <span></span><span></span><span></span>
       </div>
+      <div id="feedbackBanner" class="hidden" style="background:#f4f4f5; border-radius:12px; margin: 0 14px 14px 14px; padding:12px; font-size:14px;">
+          <div id="feedbackText" style="font-weight:500; margin-bottom:8px;">Did it help?</div>
+          <div style="display:flex; gap:10px;">
+              <button onclick="submitFeedback(1)" style="flex:1; border:1px solid #ccc; background:#fff; border-radius:8px; padding:6px; cursor:pointer;">👍 Yes</button>
+              <button onclick="submitFeedback(-1)" style="flex:1; border:1px solid #ccc; background:#fff; border-radius:8px; padding:6px; cursor:pointer;">👎 No</button>
+          </div>
+      </div>
       <div class="chat-input-row">
         <input type="file" id="chatFileInput" class="hidden" onchange="handleFileSelect(event)">
         <button class="chat-icon-btn plus" title="Attach file" style="border:none;background:none;font-size:24px;color:#8E8E8E;cursor:pointer;padding:0 4px;font-weight:300;" onclick="triggerFileUpload()">+</button>

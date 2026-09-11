@@ -14,7 +14,26 @@ from veya_agents.agent_system import orchestrator
 from veya_agents.tools import derive_metric_explanation, adjust_tomorrow_plan
 from veya_connectors.google_calendar import GoogleCalendarConnector
 
-app = FastAPI(title="Veya AI Life Companion API", version="2.0.0")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    import sys
+    import os
+    # Add root to sys path so we can import seed_vaibhav
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from veya_data.db_schema import init_db
+    from veya_data.auth_db import init_auth_tables
+    import seed_vaibhav
+    init_db()
+    init_auth_tables()
+    try:
+        seed_vaibhav.seed_vaibhav()
+    except Exception as e:
+        print("Failed to seed:", e)
+    yield
+
+app = FastAPI(title="Veya AI Life Companion API", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,6 +45,7 @@ app.add_middleware(
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=20)
+    conn.execute('PRAGMA journal_mode=WAL;')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -296,12 +316,26 @@ async def voice_stream(websocket: WebSocket, uuid: str):
                         }
                     },
                     "systemInstruction": {
-                        "parts": [{"text": "You are Veya, a highly empathetic and brief companion. You must speak in 1-2 short sentences. Acknowledge user's stress."}]
+                        "parts": [{"text": "You are Veya. Act like a close, empathetic best friend and a proactive personal secretary who knows my patterns. Be deeply supportive. Speak in 1-2 short, conversational sentences. Anticipate my needs based on my schedule without asking too many questions."}]
                     }
                 }
             }
             await gemini_ws.send(json.dumps(setup_msg))
             setup_resp = await gemini_ws.recv()
+            
+            # Make the AI speak first
+            initial_prompt = {
+                "clientContent": {
+                    "turns": [
+                        {
+                            "role": "user",
+                            "parts": [{"text": "Hi Veya, I'm here."}]
+                        }
+                    ],
+                    "turnComplete": True
+                }
+            }
+            await gemini_ws.send(json.dumps(initial_prompt))
             
             async def receive_from_browser():
                 try:
@@ -519,16 +553,16 @@ def get_insights(uuid: str):
 
     if p and p["persona_name"] == "Vaibhav":
         return {
-            "energy_capacity": 42,
-            "focus_depth": 85,
-            "productivity_index": 92,
+            "twin_maturity": f"Week {p['twin_maturity_weeks']} Maturity",
             "actionable_advice": {
                 "text": "You have 5.5 hours of meetings today. You are at high risk of burnout. Block 30 mins to learn something new to break the monotony.",
                 "nudge_action": "Remind me to read an article at 4:30 PM"
             },
-            "metrics": [
-                {"name": "Cognitive Load", "value": "Heavy", "trend": "up", "details": "Back-to-back architecture syncs."},
-                {"name": "Relational Deficit", "value": "Rohan & Priya", "trend": "down", "details": "You've been working late. Time with wife and kid is dropping."}
+            "scores": [
+                {"id": "energy", "name": "Energy Balance", "value": 42, "category": "Biological", "status": "Critical"},
+                {"id": "family", "name": "Relational Deficit", "value": 55, "category": "Family", "status": "Warning"},
+                {"id": "learning", "name": "Learning Goals", "value": 85, "category": "Growth", "status": "Optimal"},
+                {"id": "work", "name": "Meeting Load", "value": 92, "category": "Work", "status": "Heavy"}
             ]
         }
 
@@ -559,7 +593,14 @@ def get_insights(uuid: str):
 def derive_insight(req: DeriveRequest):
     explanation_json = derive_metric_explanation(req.internal_uuid, req.metric_name, req.score)
     import json
-    parsed = json.loads(explanation_json)
+    try:
+        parsed = json.loads(explanation_json)
+    except json.JSONDecodeError:
+        parsed = {
+            "reason": "Veya is still calibrating your baseline signals.",
+            "recommendation": "Wear your fitness tracker to bed tonight for better analysis.",
+            "provenance": ["Calibrating Baseline", "Missing Data"]
+        }
     return {
         "metric": req.metric_name,
         "score": req.score,

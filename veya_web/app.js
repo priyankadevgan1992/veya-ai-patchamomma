@@ -477,7 +477,8 @@ function appendAssistantMessage(text, actions = null) {
       contentHtml += `
         <div class="action-card" id="${act.id}">
           <h4>${escapeHtml(act.title)}</h4>
-          <button onclick="executeAction('${escapeHtml(escapeJsStr(act.id))}', '${escapeHtml(escapeJsStr(act.title))}')">
+          ${act.description ? `<p style="font-size: 13px; color: #555; margin-bottom: 8px;">${escapeHtml(act.description)}</p>` : ''}
+          <button class="action-approve-btn" onclick="executeAction(\'${escapeHtml(escapeJsStr(act.id))}\', \'${escapeHtml(escapeJsStr(act.title))}\', this)">
             ${act.type === 'VOICE_CALL_OFFER' ? 'Start Call' : 'Approve & Apply'}
           </button>
         </div>
@@ -497,7 +498,7 @@ let voiceCallAudioContext = null;
 let voiceCallPlayContext = null;
 let voiceFallbackAudio = null;
 
-async function executeAction(actionId, title) {
+async function executeAction(actionId, title, btnElement = null) {
   if (actionId === "opt_voice_call") {
     document.getElementById("voiceCallModal").classList.remove("hidden");
     
@@ -512,7 +513,8 @@ async function executeAction(actionId, title) {
     }).catch(e => console.log("Audio priming skipped: ", e));
     
     try {
-      const wsUrl = `ws://${location.host}/api/voice/stream?uuid=${activeUser.internal_uuid}`;
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${location.host}/api/voice/stream?uuid=${activeUser.internal_uuid}`;
       voiceCallWs = new WebSocket(wsUrl);
       voiceCallWs.binaryType = "arraybuffer";
       
@@ -593,10 +595,18 @@ async function executeAction(actionId, title) {
     return;
   }
 
-  const card = document.getElementById(actionId);
-  const btn = card.querySelector(".action-approve-btn");
-  btn.disabled = true;
-  btn.textContent = "Applying to Calendar...";
+  let btn = btnElement;
+  if (!btn) {
+    const card = document.getElementById(actionId);
+    if (card) {
+      btn = card.querySelector(".action-approve-btn") || card.querySelector("button");
+    }
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Applying to Calendar...";
+  }
 
   try {
     const res = await fetch(`${API_BASE}/actions/execute`, {
@@ -610,16 +620,20 @@ async function executeAction(actionId, title) {
     });
 
     const data = await res.json();
-    if (data.status === "EXECUTED_ON_GOOGLE_CALENDAR") {
-      btn.className = "action-approve-btn applied-google";
-      btn.textContent = "✓ Added to Google Calendar";
-    } else {
-      btn.className = "action-approve-btn applied";
-      btn.textContent = "✓ Applied";
+    if (btn) {
+      if (data.status === "EXECUTED_ON_GOOGLE_CALENDAR") {
+        btn.className = "action-approve-btn applied-google";
+        btn.textContent = "✓ Added to Google Calendar";
+      } else {
+        btn.className = "action-approve-btn applied";
+        btn.textContent = "✓ Applied";
+      }
     }
   } catch (err) {
-    btn.disabled = false;
-    btn.textContent = "Error - Retry";
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Error - Retry";
+    }
   }
 }
 
